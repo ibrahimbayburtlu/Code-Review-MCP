@@ -1,15 +1,16 @@
-package com.mcp.code_review.rule;
+package com.mcp.code_review.rule.reliability;
 
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.stmt.CatchClause;
 import com.mcp.code_review.model.ReviewIssue;
+import com.mcp.code_review.rule.Rule;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class CatchGenericExceptionRule implements Rule {
+public class EmptyCatchRule implements Rule {
 
     @Override
     public List<ReviewIssue> analyze(CompilationUnit compilationUnit) {
@@ -21,27 +22,25 @@ public class CatchGenericExceptionRule implements Rule {
 
         for (CatchClause catchClause : catches) {
 
-            String exceptionType =
-                    catchClause.getParameter()
-                            .getType()
-                            .asString();
-
-            if ("Exception".equals(exceptionType)
-                    || "Throwable".equals(exceptionType)) {
+            if (catchClause.getBody().isEmpty()) {
 
                 issues.add(
                         ReviewIssue.builder()
-                                .rule("CATCH_GENERIC_EXCEPTION")
-                                .severity("HIGH")
-                                .message("Avoid catching generic " + exceptionType + ".")
+                                .rule("EMPTY_CATCH")
+                                .severity("MEDIUM")
+                                .message("Empty catch block detected.")
                                 .line(catchClause.getBegin()
-                                        .map(position -> position.line)
+                                        .map(p -> p.line)
                                         .orElse(0))
                                 .build()
                 );
+
             }
+
         }
 
         return issues;
+
     }
+
 }
