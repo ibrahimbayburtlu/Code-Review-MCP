@@ -1,6 +1,8 @@
 package com.mcp.code_review.rule;
 
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.Modifier;
+import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.IntegerLiteralExpr;
 import com.mcp.code_review.model.ReviewIssue;
 import org.springframework.stereotype.Component;
@@ -31,16 +33,45 @@ public class MagicNumberRule implements Rule {
                 continue;
             }
 
+            if (isConstant(literal)) {
+                continue;
+            }
+
             issues.add(
                     ReviewIssue.builder()
                             .rule("MAGIC_NUMBER")
                             .severity("LOW")
                             .message("Magic number detected: " + value)
-                            .line(literal.getBegin().map(p -> p.line).orElse(0))
+                            .line(literal.getBegin()
+                                    .map(p -> p.line)
+                                    .orElse(0))
                             .build()
             );
         }
 
         return issues;
+    }
+
+    private boolean isConstant(IntegerLiteralExpr literal) {
+
+        if (literal.getParentNode().isEmpty()) {
+            return false;
+        }
+
+        if (!(literal.getParentNode().get() instanceof VariableDeclarator variable)) {
+            return false;
+        }
+
+        if (variable.getParentNode().isEmpty()) {
+            return false;
+        }
+
+        if (!(variable.getParentNode().get()
+                instanceof com.github.javaparser.ast.body.FieldDeclaration field)) {
+            return false;
+        }
+
+        return field.hasModifier(Modifier.Keyword.STATIC)
+                && field.hasModifier(Modifier.Keyword.FINAL);
     }
 }
