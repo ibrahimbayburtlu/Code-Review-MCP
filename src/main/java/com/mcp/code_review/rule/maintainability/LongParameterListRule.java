@@ -1,17 +1,17 @@
-package com.mcp.code_review.rule;
-
+package com.mcp.code_review.rule.maintainability;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.mcp.code_review.model.ReviewIssue;
+import com.mcp.code_review.rule.Rule;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class LongMethodRule implements Rule {
+public class LongParameterListRule implements Rule {
 
-    private static final int MAX_METHOD_LINES = 40;
+    private static final int MAX_PARAMETERS = 5;
 
     @Override
     public List<ReviewIssue> analyze(CompilationUnit compilationUnit) {
@@ -23,26 +23,22 @@ public class LongMethodRule implements Rule {
 
         for (MethodDeclaration method : methods) {
 
-            if (method.getBegin().isEmpty() || method.getEnd().isEmpty()) {
-                continue;
-            }
+            int parameterCount = method.getParameters().size();
 
-            int lineCount =
-                    method.getEnd().get().line -
-                            method.getBegin().get().line + 1;
-
-            if (lineCount > MAX_METHOD_LINES) {
+            if (parameterCount > MAX_PARAMETERS) {
 
                 issues.add(
                         ReviewIssue.builder()
-                                .rule("LONG_METHOD")
+                                .rule("LONG_PARAMETER_LIST")
                                 .severity("MEDIUM")
                                 .message(String.format(
-                                        "Method '%s' has %d lines (max %d).",
+                                        "Method '%s' has %d parameters (max %d).",
                                         method.getNameAsString(),
-                                        lineCount,
-                                        MAX_METHOD_LINES))
-                                .line(method.getBegin().get().line)
+                                        parameterCount,
+                                        MAX_PARAMETERS))
+                                .line(method.getBegin()
+                                        .map(position -> position.line)
+                                        .orElse(0))
                                 .build()
                 );
             }

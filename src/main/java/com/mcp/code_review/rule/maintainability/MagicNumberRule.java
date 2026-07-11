@@ -1,10 +1,11 @@
-package com.mcp.code_review.rule;
+package com.mcp.code_review.rule.maintainability;
 
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.IntegerLiteralExpr;
 import com.mcp.code_review.model.ReviewIssue;
+import com.mcp.code_review.rule.Rule;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
